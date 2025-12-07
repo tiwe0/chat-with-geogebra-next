@@ -81,13 +81,8 @@ export async function POST(req: Request) {
       })
 
       logger.api("返回流式响应")
-      // Return the stream response
-      return result.toTextStreamResponse({
-        headers: {
-          "Transfer-Encoding": "chunked",
-          Connection: "keep-alive"
-        }
-      })
+      // @ts-ignore - toDataStreamResponse exists at runtime in ai@5.x but type definitions are incomplete
+      return result.toDataStreamResponse()
     } catch (error) {
       logger.error("创建流式响应错误:", error)
       return new Response(JSON.stringify({ error: "创建聊天流失败，请检查网络连接" }), {
