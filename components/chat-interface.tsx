@@ -194,10 +194,14 @@ export function ChatInterface({
                               <Code className="h-3 w-3" />
                               GeoGebra命令 ({commandsWithLint.length})
                               {stats.hasErrors && (
-                                <AlertCircle className="h-3 w-3 ml-1 text-red-500" title={`${stats.errorCount} 个错误`} />
+                                <span className="inline-flex items-center" title={`${stats.errorCount} 个错误`}>
+                                  <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
+                                </span>
                               )}
                               {!stats.hasErrors && stats.hasWarnings && (
-                                <AlertTriangle className="h-3 w-3 ml-1 text-yellow-500" title={`${stats.warningCount} 个警告`} />
+                                <span className="inline-flex items-center" title={`${stats.warningCount} 个警告`}>
+                                  <AlertTriangle className="h-3 w-3 ml-1 text-yellow-500" />
+                                </span>
                               )}
                               {expandedMessages[messageId] ? (
                                 <ChevronUp className="h-3 w-3 ml-1" />

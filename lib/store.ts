@@ -295,15 +295,6 @@ export const useAppStore = create<AppState>()(
     {
       name: "llm-chat-storage",
       storage: createJSONStorage(() => localStorage),
-      // 指定需要持久化的状态
-      partialize: (state: AppState) => ({
-        config: state.config,
-        conversations: state.conversations,
-        messages: state.messages,
-        activeConversationId: state.activeConversationId,
-        sidebarOpen: state.sidebarOpen,
-        showGeogebra: state.showGeogebra,
-      }),
       // 版本管理
       version: 1,
       // 在hydration时合并state
