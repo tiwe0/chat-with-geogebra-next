@@ -43,13 +43,6 @@ export function Sidebar({
           {conversations.map((conv) => (
             <div key={conv.id} className="flex items-center gap-2 mb-2">
               <Button
-                variant={activeConversationId === conv.id ? "secondary" : "ghost"}
-                className="w-full justify-start text-left truncate"
-                onClick={() => onSelectConversation(conv.id)}
-              >
-                {conv.title}
-              </Button>
-              <Button
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 flex-shrink-0"
@@ -59,6 +52,13 @@ export function Sidebar({
                 }}
               >
                 <Trash2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={activeConversationId === conv.id ? "secondary" : "ghost"}
+                className="w-full justify-start text-left truncate"
+                onClick={() => onSelectConversation(conv.id)}
+              >
+                {conv.title}
               </Button>
             </div>
           ))}

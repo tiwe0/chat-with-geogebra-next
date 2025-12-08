@@ -7,6 +7,7 @@ import {
     StringLiteral,
     BooleanLiteral,
     ListLiteral,
+    TupleLiteral,
     SourceLocation,
     Position
 } from './ast.js';
@@ -192,6 +193,8 @@ export class Parser {
                 return this.parseBooleanLiteral();
             case TokenType.LBRACE:
                 return this.parseListLiteral();
+            case TokenType.LPAREN:
+                return this.parseTupleLiteralOrGroupedExpression();
             case TokenType.IDENTIFIER:
                 return this.parseIdentifierOrFunctionCall();
             default:
@@ -311,6 +314,62 @@ export class Parser {
             elements,
             loc: this.createLocation(startPos, endPos)
         };
+    }
+    
+    /**
+     * 解析元组字面量或分组表达式
+     * 格式: (elem1, elem2, ...) 或 (expr)
+     * 
+     * 如果圆括号内只有一个元素，返回该元素本身（分组表达式）
+     * 如果有多个元素（用逗号分隔），返回 TupleLiteral
+     */
+    private parseTupleLiteralOrGroupedExpression(): Expression {
+        const startPos = this.getCurrentToken().position;
+        
+        this.consume(TokenType.LPAREN, "Expected '('");
+        
+        const elements: Expression[] = [];
+        
+        // 空元组 - 虽然不太常见，但支持
+        if (this.check(TokenType.RPAREN)) {
+            this.consume(TokenType.RPAREN, "Expected ')'");
+            const endPos = this.previous().position;
+            
+            return {
+                type: 'TupleLiteral',
+                elements: [],
+                loc: this.createLocation(startPos, endPos)
+            };
+        }
+        
+        // 解析第一个元素
+        elements.push(this.parseExpression());
+        
+        // 检查是否有更多元素（逗号分隔）
+        if (this.check(TokenType.COMMA)) {
+            // 这是一个元组
+            while (this.match(TokenType.COMMA)) {
+                // 允许尾随逗号，如 (1, 2, 3,)
+                if (this.check(TokenType.RPAREN)) {
+                    break;
+                }
+                elements.push(this.parseExpression());
+            }
+            
+            this.consume(TokenType.RPAREN, "Expected ')'");
+            const endPos = this.previous().position;
+            
+            return {
+                type: 'TupleLiteral',
+                elements,
+                loc: this.createLocation(startPos, endPos)
+            };
+        }
+        
+        // 只有一个元素，这是分组表达式，直接返回该元素
+        this.consume(TokenType.RPAREN, "Expected ')'");
+        
+        return elements[0];
     }
     
     /**

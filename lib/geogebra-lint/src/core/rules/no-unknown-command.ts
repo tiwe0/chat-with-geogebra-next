@@ -25,15 +25,17 @@ export const noUnknownCommand: Rule = {
             CommandStatement(node, ctx) {
                 const commandName = node.commandName.name;
 
-                // 跳过简单赋值语句 (如: A = {1, 2, 3})
+                // 跳过变量赋值语句 (如: A = {1, 2, 3}, A = (0, 0), x = 5)
                 // 这些语句的特征是：只有一个参数，且参数不是函数调用
                 if (node.arguments.length === 1) {
                     const arg = node.arguments[0];
-                    // 如果参数是列表、数字、字符串、布尔值，说明这是赋值语句，不是命令
+                    // 如果参数是字面量（列表、元组、数字、字符串、布尔值），说明这是赋值语句，不是命令
                     if (arg.type === 'ListLiteral' || 
+                        arg.type === 'TupleLiteral' ||  // 支持点字面量 A = (0, 0, 3)
                         arg.type === 'NumberLiteral' || 
                         arg.type === 'StringLiteral' || 
-                        arg.type === 'BooleanLiteral') {
+                        arg.type === 'BooleanLiteral' ||
+                        arg.type === 'Identifier') {  // 支持变量赋值 A = B
                         return; // 跳过检查
                     }
                 }

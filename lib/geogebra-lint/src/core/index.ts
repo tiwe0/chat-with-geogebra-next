@@ -13,6 +13,7 @@ export type {
     StringLiteral,
     BooleanLiteral,
     ListLiteral,
+    TupleLiteral,
     FunctionCall,
     ASTNode,
     BaseNode,

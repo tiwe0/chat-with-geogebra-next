@@ -55,6 +55,7 @@ export type Expression =
     | StringLiteral
     | BooleanLiteral
     | ListLiteral
+    | TupleLiteral
     | FunctionCall; // 嵌套命令调用 (例如: SetValue(A, x(B)))
 
 /**
@@ -95,6 +96,15 @@ export interface BooleanLiteral extends BaseNode {
 export interface ListLiteral extends BaseNode {
     type: 'ListLiteral';
     elements: Expression[]; // 列表中的元素也是表达式
+}
+
+/**
+ * 元组/坐标字面量 (例如: (0, 0, 3) )
+ * 用于表示点的坐标或其他元组值
+ */
+export interface TupleLiteral extends BaseNode {
+    type: 'TupleLiteral';
+    elements: Expression[]; // 元组中的元素也是表达式
 }
 
 /**

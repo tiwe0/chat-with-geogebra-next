@@ -166,7 +166,22 @@ export const useAppStore = create<AppState>()(
       setActiveConversation: (id: string) => set({ activeConversationId: id }),
       createConversation: () => {
         const id = `conv-${Date.now()}`
-        const newConversation: Conversation = { id, title: "新会话" }
+        
+        // 生成递增的对话标题
+        const state = get()
+        const existingTitles = state.conversations.map(c => c.title)
+        let titleIndex = 2
+        let newTitle = "新会话"
+        
+        // 如果已经有"新会话"，则生成"新会话 2", "新会话 3"等
+        if (existingTitles.includes("新会话")) {
+          while (existingTitles.includes(`新会话 ${titleIndex}`)) {
+            titleIndex++
+          }
+          newTitle = `新会话 ${titleIndex}`
+        }
+        
+        const newConversation: Conversation = { id, title: newTitle }
 
         set((state: AppState) => {
           // 检查是否已经存在相同ID的对话，防止重复创建
@@ -280,8 +295,8 @@ export const useAppStore = create<AppState>()(
     {
       name: "llm-chat-storage",
       storage: createJSONStorage(() => localStorage),
+      // 指定需要持久化的状态
       partialize: (state: AppState) => ({
-        ...state,
         config: state.config,
         conversations: state.conversations,
         messages: state.messages,
@@ -289,6 +304,20 @@ export const useAppStore = create<AppState>()(
         sidebarOpen: state.sidebarOpen,
         showGeogebra: state.showGeogebra,
       }),
+      // 版本管理
+      version: 1,
+      // 在hydration时合并state
+      merge: (persistedState: any, currentState: AppState) => {
+        return {
+          ...currentState,
+          ...persistedState,
+          // 确保conversations和messages存在
+          conversations: persistedState?.conversations || currentState.conversations,
+          messages: persistedState?.messages || currentState.messages,
+        }
+      },
+      // 跳过 hydration 检查（避免 SSR 问题）
+      skipHydration: false,
     },
   ),
 )

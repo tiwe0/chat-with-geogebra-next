@@ -20,6 +20,7 @@ import { useGeoGebra } from "@/hooks/use-geogebra"
 import { useErrorHandler } from "@/hooks/use-error-handler"
 import { logger } from "@/lib/logger"
 import Head from "next/head"
+import "@/lib/debug-storage" // 加载调试工具
 
 // 声明全局类型
 declare global {
@@ -44,22 +45,49 @@ export default function ChatPage() {
   const sidebarOpen = useAppStore((state) => state.sidebarOpen)
   const showGeogebra = useAppStore((state) => state.showGeogebra)
 
+  // 确保store初始化
+  useEffect(() => {
+    const state = useAppStore.getState()
+    
+    // 如果没有对话，创建一个默认对话
+    if (!state.conversations || state.conversations.length === 0) {
+      logger.info("初始化：创建默认对话")
+      state.createConversation()
+    }
+    
+    // 确保activeConversationId有效
+    const hasActiveConversation = state.conversations.some(c => c.id === state.activeConversationId)
+    if (!hasActiveConversation && state.conversations.length > 0) {
+      logger.info("初始化：设置活动对话", { id: state.conversations[0].id })
+      state.setActiveConversation(state.conversations[0].id)
+    }
+    
+    // 确保messages对象存在
+    if (!state.messages) {
+      logger.info("初始化：创建消息存储")
+      state.conversations.forEach(conv => {
+        if (!state.messages[conv.id]) {
+          state.setMessages(conv.id, [])
+        }
+      })
+    }
+  }, [])
+
   // 使用useRef和useEffect来获取消息，避免直接在渲染中访问可能导致的问题
   const storeMessagesRef = useRef<any[]>([])
+  const [localMessages, setLocalMessages] = useState<any[]>([])
+
+  // 当activeConversationId变化时，从store加载消息
   useEffect(() => {
-    storeMessagesRef.current = useAppStore.getState().messages[activeConversationId] || []
+    const messages = useAppStore.getState().messages[activeConversationId] || []
+    storeMessagesRef.current = messages
+    setLocalMessages(messages)
+    logger.info("加载对话消息", { conversationId: activeConversationId, messageCount: messages.length })
   }, [activeConversationId])
 
   // 本地UI状态
   const [configOpen, setConfigOpen] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
-  const [localMessages, setLocalMessages] = useState<any[]>([])
-
-  // 当activeConversationId变化时，更新本地消息
-  useEffect(() => {
-    const messages = useAppStore.getState().messages[activeConversationId] || []
-    setLocalMessages(messages)
-  }, [activeConversationId])
 
   // 使用useMemo缓存初始消息和配置，避免每次渲染都创建新对象
   const initialMessages = useMemo(() => convertStoreMessagesToChat(localMessages), [localMessages])
@@ -91,11 +119,11 @@ export default function ChatPage() {
   )
 
   const onFinish = useCallback(
-    (message: any, messages: any[]) => {
+    (message: any) => {
       logger.info("聊天完成", { messageLength: message.content.length })
-      // 将新消息保存到store
-      const updatedMessages = convertChatMessagesToStore(messages)
-      useAppStore.getState().setMessages(activeConversationId, updatedMessages)
+      // 从useChat获取最新的messages并保存到store
+      // 注意：这里不能直接访问messages，因为它可能还未更新
+      // 我们需要在useEffect中监听messages变化来保存
     },
     [activeConversationId],
   )
@@ -108,6 +136,16 @@ export default function ChatPage() {
   )
 
   // 初始化聊天钩子
+  const chat = useChat({
+    id: activeConversationId,
+    api: "/api/chat",
+    body: chatConfig,
+    initialMessages,
+    onResponse,
+    onFinish,
+    onError,
+  })
+
   const {
     messages,
     input,
@@ -115,15 +153,60 @@ export default function ChatPage() {
     handleSubmit,
     isLoading,
     error: chatError,
-  } = useChat({
-    id: activeConversationId,
-    api: "/api/chat",
-    body: chatConfig,
-    initialMessages,
-    onResponse,
-    onFinish: (message) => onFinish(message, messages),
-    onError,
-  })
+    setMessages: setChatMessages,
+  } = chat
+
+  // 当activeConversationId变化时，同步更新useChat的messages
+  useEffect(() => {
+    const storeMessages = useAppStore.getState().messages[activeConversationId] || []
+    const chatMessages = convertStoreMessagesToChat(storeMessages)
+    setChatMessages(chatMessages)
+    logger.info("同步对话消息到useChat", { conversationId: activeConversationId, messageCount: chatMessages.length })
+  }, [activeConversationId, setChatMessages])
+
+  // 当messages变化时，保存到store（但不在切换对话时保存）
+  const previousConversationIdRef = useRef(activeConversationId)
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  
+  useEffect(() => {
+    // 如果对话ID变化了，更新ref但不保存（因为这是切换对话）
+    if (previousConversationIdRef.current !== activeConversationId) {
+      previousConversationIdRef.current = activeConversationId
+      return
+    }
+
+    // 清除之前的保存定时器
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+
+    // 延迟保存，避免频繁保存（特别是在流式传输时）
+    saveTimeoutRef.current = setTimeout(() => {
+      if (messages.length > 0) {
+        const updatedMessages = convertChatMessagesToStore(messages)
+        const currentStoreMessages = useAppStore.getState().messages[activeConversationId] || []
+        
+        // 比较消息内容，而不仅仅是长度
+        const needsSave = updatedMessages.length !== currentStoreMessages.length ||
+          updatedMessages.some((msg, idx) => {
+            const storeMsg = currentStoreMessages[idx]
+            return !storeMsg || msg.content !== storeMsg.content
+          })
+        
+        if (needsSave) {
+          useAppStore.getState().setMessages(activeConversationId, updatedMessages)
+          setLocalMessages(updatedMessages)
+          logger.info("消息已保存到store", { conversationId: activeConversationId, messageCount: updatedMessages.length })
+        }
+      }
+    }, 500) // 500ms 延迟，避免频繁保存
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [messages, activeConversationId])
 
   // 处理聊天错误
   useEffect(() => {
@@ -137,13 +220,15 @@ export default function ChatPage() {
     clearError()
   }, [activeConversationId, clearError])
 
-  // 当用户提交消息时，更新store中的对话标题
+  // 当用户提交消息时，更新store中的对话标题（仅在第一条消息时）
   useEffect(() => {
     if (messages.length > 0 && messages[0].role === "user") {
-      const title = messages[0].content.slice(0, 20) + (messages[0].content.length > 20 ? "..." : "")
       const conversation = conversations.find((c) => c.id === activeConversationId)
-      if (conversation && conversation.title !== title) {
+      // 只在对话标题是默认值时更新（包括"新会话"、"新对话"、"新会话 2"等）
+      if (conversation && (conversation.title === "新会话" || conversation.title === "新对话" || conversation.title.startsWith("新会话 "))) {
+        const title = messages[0].content.slice(0, 30) + (messages[0].content.length > 30 ? "..." : "")
         useAppStore.getState().updateConversationTitle(activeConversationId, title)
+        logger.info("更新对话标题", { conversationId: activeConversationId, title })
       }
     }
   }, [messages, activeConversationId, conversations])

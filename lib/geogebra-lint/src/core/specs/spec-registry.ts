@@ -1,4 +1,4 @@
-import commandSignatures from './commandSignatures.js';
+import commandSignatures from './commandSignatures.json';
 
 /**
  * 命令签名信息

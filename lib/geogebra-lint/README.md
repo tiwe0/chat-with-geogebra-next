@@ -10,6 +10,7 @@
 - ✅ **类型检查**: 验证命令参数数量和类型是否正确
 - 🚫 **未知命令检测**: 识别不存在的 GeoGebra 命令，提供拼写建议
 - 📚 **命令规范**: 支持 505+ GeoGebra 命令的完整签名
+- 🎯 **Point 字面量支持**: 支持 `A = (0, 0, 3)` 等元组语法
 - 🌐 **Web 测试界面**: 实时在线测试和 AST 可视化
 - 🧪 **完整测试**: 51 个单元测试 + 集成测试
 
@@ -138,6 +139,10 @@ const script = `
 P = Point(0, 0)
 Q = Point(3, 4)
 
+// 使用坐标字面量（新功能！）
+A = (0, 0, 3)
+B = (1, 2, 0)
+
 // 设置颜色
 SetColor(P, "red")
 SetColor(Q, "blue")
@@ -148,6 +153,38 @@ myList = {1, 2, 3, 4, 5}
 // 设置可见性
 SetVisible(P, true)
 `;
+
+// 解析为 AST
+const ast = parseGeoGebraScript(script);
+console.log(JSON.stringify(ast, null, 2));
+```
+
+### 5. Point 字面量支持（新功能）
+
+现在支持使用元组语法定义点：
+
+```typescript
+import { parseGeoGebraScript } from './src/core/parser/parser';
+
+// 支持的语法
+const examples = [
+    'A = (0, 0)',          // 2D 点
+    'B = (0, 0, 3)',       // 3D 点
+    'C = (1.5, 2.7, -3)',  // 带小数
+    'D = (x, y, z)',       // 混合变量
+];
+
+examples.forEach(code => {
+    const ast = parseGeoGebraScript(code);
+    const arg = ast.body[0].arguments[0];
+    
+    console.log(`${code}`);
+    console.log(`  类型: ${arg.type}`);  // TupleLiteral
+    console.log(`  元素数: ${arg.elements.length}`);
+});
+```
+
+**详细文档**: 查看 [TUPLE-LITERAL-SUPPORT.md](docs/TUPLE-LITERAL-SUPPORT.md)
 
 try {
     const ast = parseGeoGebraScript(script);
