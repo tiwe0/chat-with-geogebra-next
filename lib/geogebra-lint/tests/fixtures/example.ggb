@@ -1,0 +1,40 @@
+// 这是一个示例 GeoGebra 脚本
+// 用于测试 parser 和 lexer
+
+// 创建点
+P = Point(0, 0)
+Q = Point(3, 4)
+R = Point(1, 1)
+
+// 设置颜色
+SetColor(P, "red")
+SetColor(Q, "blue")
+SetColor(R, "green")
+
+// 创建列表
+numbers = {1, 2, 3, 4, 5}
+points = {P, Q, R}
+
+// 设置可见性
+SetVisible(P, true)
+SetVisible(Q, false)
+
+// 设置数值
+SetValue(a, 10)
+SetValue(b, 3.14)
+
+// 嵌套调用
+SetValue(distance, Distance(P, Q))
+newPoint = Point(x(P), y(Q))
+
+// 创建滑块
+slider1 = Slider(0, 10, 0.1)
+slider2 = Slider(-5, 5, 0.5)
+
+// 设置线条属性
+SetLineThickness(P, 3)
+SetLineStyle(Q, 2)
+
+// 布尔操作
+SetFixed(P, true)
+SetVisible(R, false)

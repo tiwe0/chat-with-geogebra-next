@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoGebra Lint - 在线测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr auto;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .editor-panel {
+            padding: 20px;
+            border-right: 2px solid #e0e0e0;
+            grid-row: 1 / 3;
+        }
+
+        .ast-panel {
+            padding: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            background: #f8f9fa;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+
+        .results-panel {
+            padding: 20px;
+            background: #fff;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .panel-header h2 {
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        #code-input {
+            width: 100%;
+            height: 500px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        #code-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .results-panel {
+            background: #f8f9fa;
+        }
+
+        .ast-container {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .ast-node {
+            margin-left: 20px;
+            border-left: 2px solid #ddd;
+            padding-left: 10px;
+            margin-top: 5px;
+        }
+
+        .ast-node-type {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .ast-node-name {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+
+        .ast-node-value {
+            color: #27ae60;
+        }
+
+        .ast-node-location {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card.error {
+            border-left-color: #e74c3c;
+        }
+
+        .stat-card.warning {
+            border-left-color: #f39c12;
+        }
+
+        .stat-card.success {
+            border-left-color: #27ae60;
+        }
+
+        .stat-card .label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #results-container {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .message {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .message.error {
+            border-left-color: #e74c3c;
+        }
+
+        .message.warning {
+            border-left-color: #f39c12;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .message-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+
+        .message-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .message-location {
+            color: #666;
+            font-size: 0.9em;
+            margin-left: auto;
+            font-family: 'Consolas', monospace;
+        }
+
+        .message-text {
+            color: #555;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .message-suggestion {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #666;
+            border-left: 3px solid #3498db;
+        }
+
+        .no-issues {
+            text-align: center;
+            padding: 40px;
+            color: #27ae60;
+        }
+
+        .no-issues-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .examples {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e8f4f8;
+            border-radius: 8px;
+        }
+
+        .examples h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .example-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 6px;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9em;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+
+            .editor-panel {
+                border-right: none;
+                border-bottom: 2px solid #e0e0e0;
+                grid-row: 1;
+            }
+
+            .ast-panel {
+                grid-row: 2;
+            }
+
+            .results-panel {
+                grid-row: 3;
+                border-bottom: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 GeoGebra Lint</h1>
+            <p>实时检查 GeoGebra 脚本的语法和命令错误</p>
+            <p style="font-size: 0.8em; opacity: 0.7;">版本: <span id="version-info">加载中...</span> | <a href="?reload=1" style="color: white;">清除缓存并重载</a></p>
+        </div>
+
+        <div class="main-content">
+            <div class="editor-panel">
+                <div class="panel-header">
+                    <h2>📝 代码编辑器</h2>
+                    <div>
+                        <button class="btn btn-primary" onclick="lintCode()">🚀 检查代码</button>
+                        <button class="btn btn-secondary" onclick="clearCode()">🗑️ 清空</button>
+                    </div>
+                </div>
+                
+                <textarea id="code-input" placeholder="在这里输入 GeoGebra 脚本代码...&#10;&#10;例如：&#10;A = Point({0, 0})&#10;B = Point({3, 4})&#10;d = Distance(A, B)">// 示例代码
+A = Point({0, 0})
+B = Point({3, 4})
+
+// 计算距离
+d = Distance(A, B)
+
+// 设置样式
+SetColor(A, "red")</textarea>
+
+                <div class="examples">
+                    <h3>💡 快速示例</h3>
+                    <button class="example-btn" onclick="loadExample('correct')">✅ 正确代码</button>
+                    <button class="example-btn" onclick="loadExample('unknown')">❌ 未知命令</button>
+                    <button class="example-btn" onclick="loadExample('argcount')">⚠️ 参数错误</button>
+                    <button class="example-btn" onclick="loadExample('complex')">🔧 复杂示例</button>
+                </div>
+            </div>
+
+            <div class="ast-panel">
+                <div class="panel-header">
+                    <h2>🌲 抽象语法树 (AST)</h2>
+                </div>
+
+                <div id="ast-container" class="ast-container">
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        点击"检查代码"按钮查看 AST
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-panel">
+                <div class="panel-header">
+                    <h2>📊 检查结果</h2>
+                </div>
+
+                <div class="stats">
+                    <div class="stat-card error">
+                        <div class="label">错误</div>
+                        <div class="value" id="error-count">0</div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="label">警告</div>
+                        <div class="value" id="warning-count">0</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="label">命令数</div>
+                        <div class="value" id="command-count">0</div>
+                    </div>
+                </div>
+
+                <div id="results-container">
+                    <div class="no-issues">
+                        <div class="no-issues-icon">🎯</div>
+                        <h3>点击"检查代码"按钮开始检查</h3>
+                        <p>或选择左侧的快速示例</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 导入 lint 引擎（需要先构建）
+        try {
+            // 添加时间戳避免缓存问题
+            const timestamp = new Date().getTime();
+            const module = await import(`../dist/index.js?v=${timestamp}`);
+            
+            const { 
+                Lexer, 
+                parseGeoGebraScript, 
+                RuleEngine, 
+                noUnknownCommand, 
+                correctArgTypes,
+                LintSeverity 
+            } = module;
+
+            // 创建规则引擎
+            const engine = new RuleEngine({
+                rules: {
+                    'no-unknown-command': 'error',
+                    'correct-arg-types': 'warn'
+                }
+            });
+
+            engine.registerRules([
+                noUnknownCommand,
+                correctArgTypes
+            ]);
+
+            // 暴露到全局作用域
+            window.lintEngine = engine;
+            window.parseGeoGebraScript = parseGeoGebraScript;
+            window.LintSeverity = LintSeverity;
+            window.moduleLoaded = true;
+
+            // 显示版本信息
+            document.getElementById('version-info').textContent = `${new Date().toLocaleString('zh-CN')}`;
+
+            console.log('✅ GeoGebra Lint 引擎加载成功');
+            
+            // 自动检查初始代码
+            setTimeout(() => {
+                if (window.lintCode) {
+                    window.lintCode();
+                }
+            }, 100);
+        } catch (error) {
+            console.error('❌ 模块加载失败:', error);
+            window.moduleLoaded = false;
+            window.moduleError = error.message;
+            
+            // 显示错误提示
+            document.getElementById('results-container').innerHTML = `
+                <div style="padding: 20px; background: #fee; border: 2px solid #e74c3c; border-radius: 8px; margin: 10px 0;">
+                    <h3 style="color: #e74c3c; margin-bottom: 10px;">❌ 模块加载失败</h3>
+                    <p style="color: #333; margin-bottom: 10px;">无法加载 GeoGebra Lint 引擎。请确保：</p>
+                    <ol style="color: #666; margin-left: 20px;">
+                        <li>已运行 <code>npm run build:browser</code> 构建项目</li>
+                        <li>使用 HTTP 服务器打开此页面（而非 file:// 协议）</li>
+                        <li>检查浏览器控制台获取详细错误信息</li>
+                    </ol>
+                    <p style="color: #999; margin-top: 10px; font-size: 0.9em;">
+                        错误详情: ${error.message}
+                    </p>
+                </div>
+            `;
+            
+            document.getElementById('ast-container').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">⚠️</div>
+                    <strong>模块加载失败</strong><br>
+                    <small>请查看下方错误提示</small>
+                </div>
+            `;
+        }
+    </script>
+
+    <script>
+        function lintCode() {
+            // 检查模块是否加载
+            if (!window.moduleLoaded) {
+                showError(window.moduleError || '模块未加载，请刷新页面重试');
+                return;
+            }
+
+            if (!window.lintEngine) {
+                showError('Lint 引擎未初始化，请刷新页面');
+                return;
+            }
+
+            const code = document.getElementById('code-input').value;
+            
+            if (!code.trim()) {
+                showNoIssues('请输入代码');
+                displayAST(null);
+                return;
+            }
+
+            try {
+                const result = window.lintEngine.lint(code);
+                displayResults(result);
+                
+                // 显示 AST
+                try {
+                    const ast = window.parseGeoGebraScript(code);
+                    displayAST(ast);
+                } catch (e) {
+                    displayAST(null, e.message);
+                }
+            } catch (error) {
+                console.error('Lint error:', error);
+                showError('检查过程中发生错误: ' + error.message);
+                displayAST(null, error.message);
+            }
+        }
+
+        function displayAST(ast, error = null) {
+            const container = document.getElementById('ast-container');
+            
+            if (error) {
+                container.innerHTML = `
+                    <div style="color: #e74c3c; padding: 20px;">
+                        <strong>❌ 解析错误</strong><br>
+                        ${escapeHtml(error)}
+                    </div>
+                `;
+                return;
+            }
+            
+            if (!ast) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #999;">
+                        点击"检查代码"按钮查看 AST
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="ast-node">';
+            html += `<span class="ast-node-type">Program</span> `;
+            html += `<span class="ast-node-location">(${ast.body.length} 个命令)</span>`;
+            
+            ast.body.forEach((cmd, index) => {
+                html += renderASTNode(cmd, index + 1);
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderASTNode(node, index = null) {
+            let html = '<div class="ast-node">';
+            
+            if (node.type === 'CommandStatement') {
+                const loc = `${node.loc.start.line}:${node.loc.start.column}`;
+                html += `<span style="color: #666;">${index}.</span> `;
+                html += `<span class="ast-node-type">CommandStatement</span> `;
+                html += `<span class="ast-node-location">[${loc}]</span>`;
+                html += '<div class="ast-node">';
+                html += `<span class="ast-node-type">命令名:</span> `;
+                html += `<span class="ast-node-name">${escapeHtml(node.commandName.name)}</span>`;
+                html += '</div>';
+                
+                if (node.assignTo) {
+                    html += '<div class="ast-node">';
+                    html += `<span class="ast-node-type">赋值给:</span> `;
+                    html += `<span class="ast-node-name">${escapeHtml(node.assignTo.name)}</span>`;
+                    html += '</div>';
+                }
+                
+                html += '<div class="ast-node">';
+                html += `<span class="ast-node-type">参数 (${node.arguments.length}):</span>`;
+                node.arguments.forEach((arg, idx) => {
+                    html += renderArgument(arg, idx);
+                });
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function renderArgument(arg, index) {
+            let html = '<div class="ast-node">';
+            html += `<span style="color: #999;">[${index}]</span> `;
+            
+            switch (arg.type) {
+                case 'NumberLiteral':
+                    html += `<span class="ast-node-type">Number:</span> `;
+                    html += `<span class="ast-node-value">${arg.value}</span>`;
+                    break;
+                case 'StringLiteral':
+                    html += `<span class="ast-node-type">String:</span> `;
+                    html += `<span class="ast-node-value">"${escapeHtml(arg.value)}"</span>`;
+                    break;
+                case 'BooleanLiteral':
+                    html += `<span class="ast-node-type">Boolean:</span> `;
+                    html += `<span class="ast-node-value">${arg.value}</span>`;
+                    break;
+                case 'Identifier':
+                    html += `<span class="ast-node-type">Identifier:</span> `;
+                    html += `<span class="ast-node-name">${escapeHtml(arg.name)}</span>`;
+                    break;
+                case 'ListLiteral':
+                    html += `<span class="ast-node-type">List:</span> `;
+                    html += `<span class="ast-node-value">{${arg.elements.length} 个元素}</span>`;
+                    break;
+                case 'FunctionCall':
+                    html += `<span class="ast-node-type">FunctionCall:</span> `;
+                    html += `<span class="ast-node-name">${escapeHtml(arg.callee.name)}</span>`;
+                    html += `<span class="ast-node-value">(${arg.arguments.length} 参数)</span>`;
+                    break;
+                default:
+                    html += `<span class="ast-node-type">${arg.type}</span>`;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function displayResults(result) {
+            const container = document.getElementById('results-container');
+            const errorCount = document.getElementById('error-count');
+            const warningCount = document.getElementById('warning-count');
+            const commandCount = document.getElementById('command-count');
+
+            // 更新统计
+            errorCount.textContent = result.errorCount;
+            warningCount.textContent = result.warningCount;
+            
+            // 计算命令数
+            try {
+                const ast = window.parseGeoGebraScript(result.source);
+                commandCount.textContent = ast.body.length;
+            } catch (e) {
+                commandCount.textContent = '-';
+            }
+
+            // 显示结果
+            if (result.messages.length === 0) {
+                showNoIssues('✨ 太棒了！代码没有发现任何问题！');
+                return;
+            }
+
+            let html = '';
+            result.messages.forEach(msg => {
+                const severity = msg.severity === window.LintSeverity.Error ? 'error' : 
+                               msg.severity === window.LintSeverity.Warning ? 'warning' : 'info';
+                const icon = severity === 'error' ? '❌' : severity === 'warning' ? '⚠️' : 'ℹ️';
+                const location = `${msg.loc.start.line}:${msg.loc.start.column}`;
+
+                html += `
+                    <div class="message ${severity}">
+                        <div class="message-header">
+                            <span class="message-icon">${icon}</span>
+                            <span class="message-title">${msg.ruleId}</span>
+                            <span class="message-location">${location}</span>
+                        </div>
+                        <div class="message-text">${msg.message}</div>
+                        ${msg.suggestions && msg.suggestions.length > 0 ? 
+                            `<div class="message-suggestion">💡 ${msg.suggestions[0]}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function showNoIssues(message) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = `
+                <div class="no-issues">
+                    <div class="no-issues-icon">✅</div>
+                    <h3>${message}</h3>
+                </div>
+            `;
+            
+            document.getElementById('error-count').textContent = '0';
+            document.getElementById('warning-count').textContent = '0';
+        }
+
+        function showError(message) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = `
+                <div class="message error">
+                    <div class="message-header">
+                        <span class="message-icon">❌</span>
+                        <span class="message-title">错误</span>
+                    </div>
+                    <div class="message-text">${message}</div>
+                </div>
+            `;
+        }
+
+        function clearCode() {
+            document.getElementById('code-input').value = '';
+            showNoIssues('代码已清空');
+            displayAST(null);
+            document.getElementById('command-count').textContent = '0';
+        }
+
+        function loadExample(type) {
+            const examples = {
+                correct: `// 正确的 GeoGebra 命令
+A = Point({0, 0})
+B = Point({3, 4})
+C = Point({0, 4})
+
+// 计算距离
+d = Distance(A, B)
+
+// 创建三角形
+triangle = Polygon(A, B, C)`,
+
+                unknown: `// 包含未知命令
+A = Point({0, 0})
+UnknownCommand(A, 1)
+InvalidFunction(x, y)
+SetValu(obj, 5)`,
+
+                argcount: `// 参数数量错误
+A = Point({0, 0})
+B = Point({3, 4})
+
+// 缺少参数
+Distance(A)
+SetColor(B)
+Point()`,
+
+                complex: `// 复杂示例：嵌套和多行
+result = Distance(Point({0, 0}), Point({3, 4}))
+
+// 列表操作
+myList = {1, 2, 3, 4, 5}
+sum = Sum(myList)
+
+// 多步骤操作
+P = Point({1, 2})
+Q = Point({5, 6})
+midpoint = Midpoint(P, Q)
+SetColor(midpoint, "blue")
+SetVisibleInView(midpoint, 1, true)`
+            };
+
+            const textarea = document.getElementById('code-input');
+            textarea.value = examples[type] || examples.correct;
+            
+            // 自动检查
+            setTimeout(() => lintCode(), 100);
+        }
+
+        // 支持 Ctrl+Enter 快捷键
+        document.getElementById('code-input').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                lintCode();
+            }
+        });
+
+        // 页面加载时自动检查初始代码
+        window.addEventListener('load', function() {
+            // 等待模块加载完成
+            const checkAndRun = () => {
+                if (window.moduleLoaded) {
+                    setTimeout(() => lintCode(), 100);
+                } else if (window.moduleLoaded === false) {
+                    // 模块加载失败，不执行
+                    console.error('模块加载失败，跳过自动检查');
+                } else {
+                    // 继续等待
+                    setTimeout(checkAndRun, 100);
+                }
+            };
+            checkAndRun();
+        });
+    </script>
+</body>
+</html>
