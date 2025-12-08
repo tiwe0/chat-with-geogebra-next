@@ -1,4 +1,4 @@
-import { ASTNode, SourceLocation } from '../core/parser/ast.js';
+import { ASTNode, SourceLocation } from '../core/parser/ast';
 
 /**
  * Lint 消息的严重程度

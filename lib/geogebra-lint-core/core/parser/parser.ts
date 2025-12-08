@@ -10,8 +10,8 @@ import {
     TupleLiteral,
     SourceLocation,
     Position
-} from './ast.js';
-import { Token, TokenType, Lexer } from './lexer.js';
+} from './ast';
+import { Token, TokenType, Lexer } from './lexer';
 
 /**
  * Parser 错误类

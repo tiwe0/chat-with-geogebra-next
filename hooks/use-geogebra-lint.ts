@@ -8,7 +8,7 @@ import {
   LintResult,
   LintMessage,
   LintSeverity,
-} from "@/lib/geogebra-lint"
+} from "@/lib/geogebra-lint-core"
 
 export interface LintError {
   line: number

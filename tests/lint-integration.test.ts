@@ -11,7 +11,7 @@ import {
   correctArgTypes,
   formatLintResults,
   type LintResult,
-} from '../lib/geogebra-lint'
+} from '../lib/geogebra-lint-core'
 
 // 测试示例命令
 const testCases = [

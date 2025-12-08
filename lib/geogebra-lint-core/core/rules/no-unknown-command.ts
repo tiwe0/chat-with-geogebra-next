@@ -1,6 +1,6 @@
-import { Rule, RuleContext } from './rule.js';
-import { LintSeverity } from '../../types/linting.js';
-import { specRegistry } from '../specs/spec-registry.js';
+import { Rule, RuleContext } from './rule';
+import { LintSeverity } from '../../types/linting';
+import { specRegistry } from '../specs/spec-registry';
 
 /**
  * 规则: 检测未知的 GeoGebra 命令

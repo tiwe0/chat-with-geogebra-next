@@ -1,7 +1,7 @@
-import { Rule, RuleContext } from './rule.js';
-import { LintSeverity } from '../../types/linting.js';
-import { specRegistry, CommandSpec } from '../specs/spec-registry.js';
-import { Expression } from '../parser/ast.js';
+import { Rule, RuleContext } from './rule';
+import { LintSeverity } from '../../types/linting';
+import { specRegistry, CommandSpec } from '../specs/spec-registry';
+import { Expression } from '../parser/ast';
 
 /**
  * 规则: 检查命令参数类型是否正确

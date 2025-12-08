@@ -1,7 +1,7 @@
-import { Program, CommandStatement, ASTNode } from '../parser/ast.js';
-import { Rule, RuleContext, RuleVisitor } from './rule.js';
-import { LintMessage, LintResult, LintSeverity, LintConfig } from '../../types/linting.js';
-import { parseGeoGebraScript } from '../parser/parser.js';
+import { Program, CommandStatement, ASTNode } from '../parser/ast';
+import { Rule, RuleContext, RuleVisitor } from './rule';
+import { LintMessage, LintResult, LintSeverity, LintConfig } from '../../types/linting';
+import { parseGeoGebraScript } from '../parser/parser';
 
 /**
  * 规则引擎 - 负责运行所有规则并收集 lint 消息

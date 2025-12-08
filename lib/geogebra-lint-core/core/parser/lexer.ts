@@ -1,4 +1,4 @@
-import { Position } from './ast.js';
+import { Position } from './ast';
 
 // --- Token 类型定义 ---
 export enum TokenType {

@@ -1,5 +1,5 @@
-import { Program, CommandStatement, ASTNode } from '../parser/ast.js';
-import { LintSeverity } from '../../types/linting.js';
+import { Program, CommandStatement, ASTNode } from '../parser/ast';
+import { LintSeverity } from '../../types/linting';
 
 /**
  * 规则上下文，提供给规则使用的工具和信息
