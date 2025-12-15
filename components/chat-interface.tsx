@@ -5,14 +5,15 @@ import { useState, useRef, useEffect, useMemo, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Send, AlertCircle, Play, ChevronDown, ChevronUp, Code } from "lucide-react"
+import { Send, AlertCircle, Play, ChevronDown, ChevronUp, Code, AlertTriangle, Info } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkMath from "remark-math"
 import rehypeKatex from "rehype-katex"
 import remarkGfm from "remark-gfm"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { useGeoGebraCommands } from "@/hooks/use-geogebra-commands"
+import { useGeoGebraCommands, type CommandWithLint } from "@/hooks/use-geogebra-commands"
+import { useGeoGebraLint } from "@/hooks/use-geogebra-lint"
 
 interface ChatMessage {
   id: string
@@ -43,7 +44,8 @@ export function ChatInterface({
 }: ChatInterfaceProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [expandedMessages, setExpandedMessages] = useState<Record<string, boolean>>({})
-  const { extractCommands, extractAllMessagesCommands } = useGeoGebraCommands()
+  const { extractAllMessagesCommandsWithLint } = useGeoGebraCommands()
+  const { formatLintErrors, getLintStats } = useGeoGebraLint()
 
   // 自动滚动到底部
   const scrollToBottom = useCallback(() => {
@@ -55,10 +57,10 @@ export function ChatInterface({
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  // 为每个消息提取GeoGebra命令
+  // 为每个消息提取GeoGebra命令并进行 lint 检查
   const messageCommandsMap = useMemo(() => {
-    return extractAllMessagesCommands(messages)
-  }, [messages, extractAllMessagesCommands])
+    return extractAllMessagesCommandsWithLint(messages)
+  }, [messages, extractAllMessagesCommandsWithLint])
 
   // 切换消息命令的展开/折叠状态
   const toggleMessageExpanded = useCallback((messageId: string) => {
@@ -71,12 +73,27 @@ export function ChatInterface({
   // 执行特定消息的命令
   const executeMessageCommands = useCallback(
     (messageId: string) => {
-      const commands = messageCommandsMap[messageId] || []
-      if (commands.length > 0 && onExecuteCommands) {
-        onExecuteCommands(commands)
+      const commandsWithLint = messageCommandsMap[messageId] || []
+      // 只执行没有错误的命令
+      const validCommands = commandsWithLint
+        .filter((cmd) => !cmd.errors.some((e) => e.severity === "error"))
+        .map((cmd) => cmd.command)
+
+      if (validCommands.length > 0 && onExecuteCommands) {
+        onExecuteCommands(validCommands)
       }
     },
     [messageCommandsMap, onExecuteCommands],
+  )
+
+  // 执行单个命令（带 lint 检查）
+  const executeSingleCommand = useCallback(
+    (command: string, hasErrors: boolean) => {
+      if (!hasErrors && onExecuteCommands) {
+        onExecuteCommands([command])
+      }
+    },
+    [onExecuteCommands],
   )
 
   return (
@@ -108,8 +125,12 @@ export function ChatInterface({
             <div className="space-y-3 pt-2 pb-1">
               {messages.map((message: any) => {
                 const messageId = message.id || `msg-${message.content.substring(0, 10)}`
-                const commands = messageCommandsMap[messageId] || []
-                const hasCommands = commands.length > 0
+                const commandsWithLint = messageCommandsMap[messageId] || []
+                const hasCommands = commandsWithLint.length > 0
+
+                // 计算统计信息
+                const allErrors = commandsWithLint.flatMap((cmd) => cmd.errors)
+                const stats = getLintStats(allErrors)
 
                 return (
                   <div key={messageId} className="mb-3">
@@ -171,7 +192,17 @@ export function ChatInterface({
                           <CollapsibleTrigger asChild>
                             <Button variant="ghost" size="sm" className="flex items-center gap-1 h-6 px-2 text-xs">
                               <Code className="h-3 w-3" />
-                              GeoGebra命令 ({commands.length})
+                              GeoGebra命令 ({commandsWithLint.length})
+                              {stats.hasErrors && (
+                                <span className="inline-flex items-center" title={`${stats.errorCount} 个错误`}>
+                                  <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
+                                </span>
+                              )}
+                              {!stats.hasErrors && stats.hasWarnings && (
+                                <span className="inline-flex items-center" title={`${stats.warningCount} 个警告`}>
+                                  <AlertTriangle className="h-3 w-3 ml-1 text-yellow-500" />
+                                </span>
+                              )}
                               {expandedMessages[messageId] ? (
                                 <ChevronUp className="h-3 w-3 ml-1" />
                               ) : (
@@ -184,29 +215,76 @@ export function ChatInterface({
                             size="sm"
                             className="flex items-center gap-1 h-6 px-2 text-xs ml-2"
                             onClick={() => executeMessageCommands(messageId)}
+                            disabled={stats.hasErrors}
+                            title={stats.hasErrors ? "存在错误，无法执行" : "执行所有有效命令"}
                           >
                             <Play className="h-3 w-3 mr-1" />
                             执行全部
                           </Button>
                           <CollapsibleContent>
                             <div className="mt-1 space-y-1 border rounded-md p-2 bg-background">
-                              {commands.map((cmd, i) => (
-                                <div
-                                  key={i}
-                                  className="text-xs p-1.5 bg-muted rounded-md flex justify-between items-center"
-                                >
-                                  <code className="text-xs">{cmd}</code>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-5 w-5 p-0 ml-2"
-                                    onClick={() => onExecuteCommands?.([cmd])}
-                                    title="在GeoGebra中执行"
-                                  >
-                                    <span className="sr-only">执行</span>▶
-                                  </Button>
-                                </div>
-                              ))}
+                              {commandsWithLint.map((cmdWithLint: CommandWithLint, i: number) => {
+                                const hasErrors = cmdWithLint.errors.some((e) => e.severity === "error")
+                                const hasWarnings = cmdWithLint.errors.some((e) => e.severity === "warning")
+
+                                return (
+                                  <div key={i} className="space-y-1">
+                                    <div
+                                      className={`text-xs p-1.5 rounded-md flex justify-between items-center ${
+                                        hasErrors
+                                          ? "bg-red-50 dark:bg-red-950"
+                                          : hasWarnings
+                                            ? "bg-yellow-50 dark:bg-yellow-950"
+                                            : "bg-muted"
+                                      }`}
+                                    >
+                                      <code className="text-xs flex-1">{cmdWithLint.command}</code>
+                                      <div className="flex items-center gap-1">
+                                        {hasErrors && <AlertCircle className="h-3 w-3 text-red-500" />}
+                                        {!hasErrors && hasWarnings && <AlertTriangle className="h-3 w-3 text-yellow-500" />}
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-5 w-5 p-0 ml-2"
+                                          onClick={() => executeSingleCommand(cmdWithLint.command, hasErrors)}
+                                          title={hasErrors ? "存在错误，无法执行" : "在GeoGebra中执行"}
+                                          disabled={hasErrors}
+                                        >
+                                          <span className="sr-only">执行</span>▶
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {cmdWithLint.errors.length > 0 && (
+                                      <div className="ml-4 text-xs space-y-0.5">
+                                        {cmdWithLint.errors.map((error, errorIdx) => (
+                                          <div
+                                            key={errorIdx}
+                                            className={`flex items-start gap-1 ${
+                                              error.severity === "error"
+                                                ? "text-red-600 dark:text-red-400"
+                                                : error.severity === "warning"
+                                                  ? "text-yellow-600 dark:text-yellow-400"
+                                                  : "text-blue-600 dark:text-blue-400"
+                                            }`}
+                                          >
+                                            {error.severity === "error" && <AlertCircle className="h-3 w-3 mt-0.5" />}
+                                            {error.severity === "warning" && <AlertTriangle className="h-3 w-3 mt-0.5" />}
+                                            {error.severity === "info" && <Info className="h-3 w-3 mt-0.5" />}
+                                            <div className="flex-1">
+                                              <div>{error.message}</div>
+                                              {error.suggestions && error.suggestions.length > 0 && (
+                                                <div className="text-muted-foreground mt-0.5">
+                                                  💡 建议: {error.suggestions.join(", ")}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })}
                             </div>
                           </CollapsibleContent>
                         </Collapsible>

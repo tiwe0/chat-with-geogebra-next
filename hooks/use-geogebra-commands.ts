@@ -1,8 +1,17 @@
 "use client"
 
 import { useCallback } from "react"
+import { useGeoGebraLint, type LintError } from "./use-geogebra-lint"
+
+export interface CommandWithLint {
+  command: string
+  index: number
+  errors: LintError[]
+}
 
 export function useGeoGebraCommands() {
+  const { lintCommand, lintCommands } = useGeoGebraLint()
+
   // 从消息内容中提取GeoGebra命令
   const extractCommands = useCallback((content: string): string[] => {
     if (!content) return []
@@ -60,10 +69,46 @@ export function useGeoGebraCommands() {
     [extractCommands],
   )
 
+  // 提取命令并进行 lint 检查
+  const extractCommandsWithLint = useCallback(
+    (content: string): CommandWithLint[] => {
+      const commands = extractCommands(content)
+      return commands.map((command, index) => ({
+        command,
+        index,
+        errors: lintCommand(command),
+      }))
+    },
+    [extractCommands, lintCommand],
+  )
+
+  // 为所有消息提取命令并进行 lint 检查
+  const extractAllMessagesCommandsWithLint = useCallback(
+    (messages: any[]): Record<string, CommandWithLint[]> => {
+      if (!messages || messages.length === 0) return {}
+
+      const result: Record<string, CommandWithLint[]> = {}
+
+      messages.forEach((message, index) => {
+        if (message.role === "assistant" && message.content) {
+          const id = message.id || `msg-${index}`
+          result[id] = extractCommandsWithLint(message.content)
+        }
+      })
+
+      return result
+    },
+    [extractCommandsWithLint],
+  )
+
   return {
     extractCommands,
     extractLatestCommands,
     extractAllMessagesCommands,
+    extractCommandsWithLint,
+    extractAllMessagesCommandsWithLint,
+    lintCommand,
+    lintCommands,
   }
 }
 
