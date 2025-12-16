@@ -21,6 +21,7 @@ import { useErrorHandler } from "@/hooks/use-error-handler"
 import { logger } from "@/lib/logger"
 import Head from "next/head"
 import "@/lib/debug-storage" // 加载调试工具
+import { DefaultChatTransport } from "ai"
 
 // 声明全局类型
 declare global {
@@ -89,9 +90,7 @@ export default function ChatPage() {
   const [configOpen, setConfigOpen] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
 
-  // 使用useMemo缓存初始消息和配置，避免每次渲染都创建新对象
-  const initialMessages = useMemo(() => convertStoreMessagesToChat(localMessages), [localMessages])
-
+  // 使用useMemo缓存配置，避免每次渲染都创建新对象
   const chatConfig = useMemo(
     () => ({
       configSettings: config,
@@ -100,27 +99,18 @@ export default function ChatPage() {
   )
 
   // 回调函数
-  const onResponse = useCallback(
-    (response: Response) => {
-      clearError()
-
-      if (!response.ok) {
-        response
-          .json()
-          .then((data) => {
-            handleError(data.error || "请求处理失败，请检查API密钥和网络连接")
-          })
-          .catch((err) => {
-            handleError(err, "请求处理失败，请检查API密钥和网络连接")
-          })
-      }
-    },
-    [clearError, handleError],
-  )
-
   const onFinish = useCallback(
     (message: any) => {
-      logger.info("聊天完成", { messageLength: message.content.length })
+      // SDK 5 中消息使用 parts 而不是 content
+      let contentLength = 0
+      if (message.parts && Array.isArray(message.parts)) {
+        const textContent = message.parts
+          .filter((part: any) => part.type === "text")
+          .map((part: any) => part.text)
+          .join("")
+        contentLength = textContent.length
+      }
+      logger.info("聊天完成", { messageLength: contentLength })
       // 从useChat获取最新的messages并保存到store
       // 注意：这里不能直接访问messages，因为它可能还未更新
       // 我们需要在useEffect中监听messages变化来保存
@@ -136,25 +126,24 @@ export default function ChatPage() {
   )
 
   // 初始化聊天钩子
-  const chat = useChat({
+  const {messages, sendMessage, status, error: chatError, setMessages: setChatMessages} = useChat({
     id: activeConversationId,
-    api: "/api/chat",
-    body: chatConfig,
-    initialMessages,
-    onResponse,
+    transport: new DefaultChatTransport({
+      api: "/api/chat",
+      body: chatConfig,
+    }),
     onFinish,
     onError,
   })
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading,
-    error: chatError,
-    setMessages: setChatMessages,
-  } = chat
+  // 本地管理 input 状态（SDK 5 不再管理 input）
+  const [input, setInput] = useState("")
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value)
+  }, [])
+
+  const isLoading = status === "submitted" || status === "streaming"
 
   // 当activeConversationId变化时，同步更新useChat的messages
   useEffect(() => {
@@ -226,7 +215,18 @@ export default function ChatPage() {
       const conversation = conversations.find((c) => c.id === activeConversationId)
       // 只在对话标题是默认值时更新（包括"新会话"、"新对话"、"新会话 2"等）
       if (conversation && (conversation.title === "新会话" || conversation.title === "新对话" || conversation.title.startsWith("新会话 "))) {
-        const title = messages[0].content.slice(0, 30) + (messages[0].content.length > 30 ? "..." : "")
+        // 提取消息内容（兼容 SDK 5 的 parts 格式）
+        let content = ""
+        if (messages[0].parts && Array.isArray(messages[0].parts)) {
+          content = messages[0].parts
+            .filter((part: any) => part.type === "text")
+            .map((part: any) => part.text)
+            .join("")
+        } else if ((messages[0] as any).content) {
+          content = (messages[0] as any).content
+        }
+        
+        const title = content.slice(0, 30) + (content.length > 30 ? "..." : "")
         useAppStore.getState().updateConversationTitle(activeConversationId, title)
         logger.info("更新对话标题", { conversationId: activeConversationId, title })
       }
@@ -237,18 +237,22 @@ export default function ChatPage() {
   const handleChatSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault()
-      if (!input.trim()) return
+      if (!input.trim() || isLoading) return
 
       clearError()
       logger.info("提交消息", { inputLength: input.length })
 
       try {
-        handleSubmit(e)
+        // SDK 5 中 sendMessage 接受对象而不是字符串
+        sendMessage({ text: input }, {
+          body: chatConfig,
+        })
+        setInput("") // 清空输入
       } catch (err) {
         handleError(err)
       }
     },
-    [input, clearError, handleSubmit, handleError],
+    [input, isLoading, clearError, sendMessage, chatConfig, handleError],
   )
 
   // 事件处理函数
@@ -281,7 +285,21 @@ export default function ChatPage() {
 
   // 执行最新消息中的所有GeoGebra命令
   const executeLatestCommands = useCallback(() => {
-    const commands = extractLatestCommands(messages)
+    // 转换消息格式以便提取命令（需要 content 属性）
+    const messagesWithContent = messages.map((msg: any) => {
+      let content = ""
+      if (msg.parts && Array.isArray(msg.parts)) {
+        content = msg.parts
+          .filter((part: any) => part.type === "text")
+          .map((part: any) => part.text)
+          .join("")
+      } else if (msg.content) {
+        content = msg.content
+      }
+      return { ...msg, content }
+    })
+
+    const commands = extractLatestCommands(messagesWithContent)
 
     if (commands.length === 0) {
       setTemporaryError("没有找到GeoGebra命令")
@@ -322,7 +340,7 @@ export default function ChatPage() {
         )}
 
         {isDesktop && !sidebarOpen && (
-          <div className="w-10 flex-shrink-0 flex items-center justify-center border-r">
+          <div className="w-10 shrink-0 flex items-center justify-center border-r">
             <Button
               variant="ghost"
               size="icon"

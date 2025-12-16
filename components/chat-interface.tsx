@@ -59,7 +59,21 @@ export function ChatInterface({
 
   // 为每个消息提取GeoGebra命令并进行 lint 检查
   const messageCommandsMap = useMemo(() => {
-    return extractAllMessagesCommandsWithLint(messages)
+    // 转换消息为统一格式，以便提取命令
+    const messagesWithContent = messages.map((msg: any) => {
+      // SDK 5 使用 parts 格式
+      let content = ""
+      if (msg.parts && Array.isArray(msg.parts)) {
+        content = msg.parts
+          .filter((part: any) => part.type === "text")
+          .map((part: any) => part.text)
+          .join("")
+      } else if (msg.content) {
+        content = msg.content
+      }
+      return { ...msg, content }
+    })
+    return extractAllMessagesCommandsWithLint(messagesWithContent)
   }, [messages, extractAllMessagesCommandsWithLint])
 
   // 切换消息命令的展开/折叠状态
@@ -98,7 +112,7 @@ export function ChatInterface({
 
   return (
     <Card className="flex-1 flex flex-col overflow-hidden border-0 rounded-none">
-      <CardHeader className="border-b p-4 flex-shrink-0">
+      <CardHeader className="border-b p-4 shrink-0">
         <div className="flex justify-between items-center">
           <CardTitle className="text-xl">对话</CardTitle>
           <div className="flex gap-2"></div>
@@ -124,9 +138,22 @@ export function ChatInterface({
           ) : (
             <div className="space-y-3 pt-2 pb-1">
               {messages.map((message: any) => {
-                const messageId = message.id || `msg-${message.content.substring(0, 10)}`
+                const messageId = message.id || `msg-${Math.random()}`
                 const commandsWithLint = messageCommandsMap[messageId] || []
                 const hasCommands = commandsWithLint.length > 0
+
+                // 提取文本内容（兼容新旧格式）
+                let messageContent = ""
+                if (message.parts && Array.isArray(message.parts)) {
+                  // SDK 5 格式：使用 parts
+                  messageContent = message.parts
+                    .filter((part: any) => part.type === "text")
+                    .map((part: any) => part.text)
+                    .join("")
+                } else if (message.content) {
+                  // 向后兼容旧格式
+                  messageContent = message.content
+                }
 
                 // 计算统计信息
                 const allErrors = commandsWithLint.flatMap((cmd) => cmd.errors)
@@ -139,7 +166,7 @@ export function ChatInterface({
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 mr-1 flex-shrink-0 self-start mt-1"
+                          className="h-8 w-8 mr-1 shrink-0 self-start mt-1"
                           onClick={() => executeMessageCommands(messageId)}
                           title="执行此消息中的所有GeoGebra命令"
                         >
@@ -151,7 +178,7 @@ export function ChatInterface({
                           message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"
                         }`}
                       >
-                        <div className="markdown-content whitespace-pre-wrap break-words">
+                        <div className="markdown-content whitespace-pre-wrap wrap-break-word">
                           <ReactMarkdown
                             remarkPlugins={[remarkMath, remarkGfm]}
                             rehypePlugins={[rehypeKatex]}
@@ -175,7 +202,7 @@ export function ChatInterface({
                               },
                             }}
                           >
-                            {message.content}
+                            {messageContent}
                           </ReactMarkdown>
                         </div>
                       </div>
@@ -299,7 +326,7 @@ export function ChatInterface({
         </div>
       </CardContent>
 
-      <CardFooter className="border-t p-4 flex-shrink-0">
+      <CardFooter className="border-t p-4 shrink-0">
         <form onSubmit={handleSubmit} className="flex w-full gap-2">
           <Input
             placeholder="输入您的消息..."

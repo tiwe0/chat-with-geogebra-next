@@ -25,7 +25,7 @@ export function useGeoGebra(): GeoGebraCommands {
 
     const script = document.createElement("script")
     scriptRef.current = script
-    script.src = "https://www.geogebra.org/apps/deployggb.js"
+    script.src = "GeoGebra/deployggb.js"
     script.async = true
     document.body.appendChild(script)
 

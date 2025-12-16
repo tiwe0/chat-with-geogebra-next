@@ -1,14 +1,14 @@
 import { createOpenAI } from "@ai-sdk/openai"
 import { createAnthropic } from "@ai-sdk/anthropic"
 import { createDeepSeek } from "@ai-sdk/deepseek"
-import { streamText } from "ai"
+import { streamText, convertToModelMessages, type UIMessage } from "ai"
 import { logger } from "@/lib/logger"
 
 // 在函数开头添加调试日志
 export async function POST(req: Request) {
   try {
     logger.api("收到聊天请求")
-    const { messages, configSettings } = await req.json()
+    const { messages, configSettings }: { messages: UIMessage[]; configSettings?: any } = await req.json()
     logger.api("请求数据", {
       messageCount: messages.length,
       modelType: configSettings?.modelType,
@@ -77,12 +77,11 @@ export async function POST(req: Request) {
       const result = streamText({
         model,
         system: systemPrompt,
-        messages,
+        messages: convertToModelMessages(messages),
       })
 
       logger.api("返回流式响应")
-      // @ts-ignore - toDataStreamResponse exists at runtime in ai@5.x but type definitions are incomplete
-      return result.toDataStreamResponse()
+      return result.toUIMessageStreamResponse()
     } catch (error) {
       logger.error("创建流式响应错误:", error)
       return new Response(JSON.stringify({ error: "创建聊天流失败，请检查网络连接" }), {

@@ -293,21 +293,8 @@ export const useAppStore = create<AppState>()(
       setShowGeogebra: (show: boolean) => set({ showGeogebra: show }),
     }),
     {
-      name: "llm-chat-storage",
+      name: "llm-chat-storage-v2", // 更改存储名称以清除旧数据
       storage: createJSONStorage(() => localStorage),
-      // 版本管理
-      version: 1,
-      // 在hydration时合并state
-      merge: (persistedState: any, currentState: AppState) => {
-        return {
-          ...currentState,
-          ...persistedState,
-          // 确保conversations和messages存在
-          conversations: persistedState?.conversations || currentState.conversations,
-          messages: persistedState?.messages || currentState.messages,
-        }
-      },
-      // 跳过 hydration 检查（避免 SSR 问题）
       skipHydration: false,
     },
   ),
@@ -315,12 +302,27 @@ export const useAppStore = create<AppState>()(
 
 // 辅助函数，用于从useChat钩子的消息格式转换到我们的消息格式
 export function convertChatMessagesToStore(messages: any[]): Message[] {
-  return messages.map((msg: any, index: number) => ({
-    id: msg.id || `imported-${index}`,
-    role: msg.role,
-    content: msg.content,
-    createdAt: Date.now() - (messages.length - index) * 1000, // 简单模拟创建时间
-  }))
+  return messages.map((msg: any, index: number) => {
+    // SDK 5 中消息使用 parts 而不是 content
+    let content = ""
+    if (msg.parts && Array.isArray(msg.parts)) {
+      // 提取所有 text 类型的 parts
+      content = msg.parts
+        .filter((part: any) => part.type === "text")
+        .map((part: any) => part.text)
+        .join("")
+    } else if (msg.content) {
+      // 向后兼容旧的 content 格式
+      content = msg.content
+    }
+
+    return {
+      id: msg.id || `imported-${index}`,
+      role: msg.role,
+      content,
+      createdAt: Date.now() - (messages.length - index) * 1000, // 简单模拟创建时间
+    }
+  })
 }
 
 // 辅助函数，用于从我们的消息格式转换到useChat钩子的消息格式
@@ -328,7 +330,13 @@ export function convertStoreMessagesToChat(messages: Message[]): any[] {
   return messages.map((msg: Message) => ({
     id: msg.id,
     role: msg.role,
-    content: msg.content,
+    // SDK 5 使用 parts 格式
+    parts: [
+      {
+        type: "text",
+        text: msg.content,
+      },
+    ],
   }))
 }
 

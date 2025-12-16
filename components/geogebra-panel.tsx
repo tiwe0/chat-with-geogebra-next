@@ -70,7 +70,7 @@ export function GeoGebraPanel({ onHide, onExecuteLatestCommands }: GeoGebraPanel
   }, [isReady, calculateDimensions])
 
   return (
-    <div id="geogebra-panel" ref={panelRef} className="flex flex-col h-full lg:w-[50%] hidden lg:block border-l">
+    <div id="geogebra-panel" ref={panelRef} className="flex flex-col h-full lg:w-[50%] lg:block border-l">
       <div id="geogebra-title" ref={titleRef} className="flex items-center justify-between p-4 border-b">
         <h3 className="text-xl font-medium">GeoGebra</h3>
         <div className="flex gap-2">
@@ -85,7 +85,7 @@ export function GeoGebraPanel({ onHide, onExecuteLatestCommands }: GeoGebraPanel
           </Button>
         </div>
       </div>
-      <div id="geogebra-container" className="w-full flex-grow"></div>
+      <div id="geogebra-container" className="w-full grow"></div>
     </div>
   )
 }
