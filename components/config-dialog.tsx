@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { AlertCircle } from "lucide-react"
+import { AlertCircle, Info, Github, ExternalLink } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAppStore } from "@/lib/store"
@@ -113,10 +113,12 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>LLM 配置</DialogTitle>
-          <DialogDescription>配置聊天应用的语言模型、API密钥和系统提示词。</DialogDescription>
+          <DialogDescription>
+            配置聊天应用的语言模型、API密钥和系统提示词。
+          </DialogDescription>
         </DialogHeader>
 
         {error && (
@@ -127,10 +129,11 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="model">模型</TabsTrigger>
             <TabsTrigger value="keys">API 密钥</TabsTrigger>
-            <TabsTrigger value="prompt">系统提示词</TabsTrigger>
+            <TabsTrigger value="prompt">提示词</TabsTrigger>
+            <TabsTrigger value="about">关于</TabsTrigger>
           </TabsList>
 
           <TabsContent value="model" className="space-y-4 py-4">
@@ -141,7 +144,9 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
               <div className="col-span-3">
                 <Select
                   value={localConfig.modelType}
-                  onValueChange={(value) => setLocalConfig({ ...localConfig, modelType: value })}
+                  onValueChange={(value) =>
+                    setLocalConfig({ ...localConfig, modelType: value })
+                  }
                 >
                   <SelectTrigger id="model">
                     <SelectValue placeholder="选择模型" />
@@ -157,7 +162,11 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
               </div>
             </div>
             <div className="text-sm text-muted-foreground mt-2">
-              当前选择的模型需要 <span className="font-medium">{getCurrentProviderKey().toUpperCase()}</span> API 密钥
+              当前选择的模型需要{" "}
+              <span className="font-medium">
+                {getCurrentProviderKey().toUpperCase()}
+              </span>{" "}
+              API 密钥
             </div>
           </TabsContent>
 
@@ -174,7 +183,10 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
                   onChange={(e) =>
                     setLocalConfig({
                       ...localConfig,
-                      apiKeys: { ...localConfig.apiKeys, openai: e.target.value },
+                      apiKeys: {
+                        ...localConfig.apiKeys,
+                        openai: e.target.value,
+                      },
                     })
                   }
                   placeholder="输入 OpenAI API 密钥"
@@ -194,7 +206,10 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
                   onChange={(e) =>
                     setLocalConfig({
                       ...localConfig,
-                      apiKeys: { ...localConfig.apiKeys, anthropic: e.target.value },
+                      apiKeys: {
+                        ...localConfig.apiKeys,
+                        anthropic: e.target.value,
+                      },
                     })
                   }
                   placeholder="输入 Anthropic API 密钥"
@@ -214,7 +229,10 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
                   onChange={(e) =>
                     setLocalConfig({
                       ...localConfig,
-                      apiKeys: { ...localConfig.apiKeys, deepseek: e.target.value },
+                      apiKeys: {
+                        ...localConfig.apiKeys,
+                        deepseek: e.target.value,
+                      },
                     })
                   }
                   placeholder="输入 DeepSeek API 密钥"
@@ -232,16 +250,134 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
                 <Textarea
                   id="systemPrompt"
                   value={localConfig.systemPrompt}
-                  onChange={(e) => setLocalConfig({ ...localConfig, systemPrompt: e.target.value })}
+                  onChange={(e) =>
+                    setLocalConfig({
+                      ...localConfig,
+                      systemPrompt: e.target.value,
+                    })
+                  }
                   placeholder="输入系统提示词，定义AI助手的行为和知识范围"
                   className="min-h-[150px]"
                 />
               </div>
             </div>
           </TabsContent>
+
+          <TabsContent value="about" className="space-y-4 py-4">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 pb-2 border-b">
+                <Info className="h-5 w-5 text-primary" />
+                <h3 className="font-semibold text-lg">版本信息</h3>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">名称:</span>
+                  <span className="col-span-2 font-medium">
+                    Chat with GeoGebra
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">版本:</span>
+                  <span className="col-span-2 font-medium">v0.2.4</span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">AI SDK:</span>
+                  <span className="col-span-2 font-medium">
+                    Vercel AI SDK 5.0
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <span className="text-muted-foreground">描述:</span>
+                  <span className="col-span-2">
+                    结合 AI 和 GeoGebra 的数学可视化助手
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-4 space-y-2">
+                <h4 className="font-medium text-sm mb-2">功能特点</h4>
+                <ul className="space-y-1 text-sm text-muted-foreground list-disc list-inside">
+                  <li>完全免费 </li>
+                  <li>支持多种 LLM 模型（GPT、Claude、DeepSeek）</li>
+                  <li>智能提取并执行 GeoGebra 命令</li>
+                  <li>实时命令语法检查与 Lint 提示</li>
+                  <li>社区（WORKING）</li>
+                </ul>
+              </div>
+
+              <div className="pt-4 border-t space-y-2">
+                <h4 className="font-medium text-sm mb-2">仓库</h4>
+                <a
+                  href="https://github.com/tiwe0/chat-with-geogebra-next"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <Github className="h-4 w-4" />
+                  GitHub 仓库（NEXT端）
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+                <a
+                  href="https://github.com/tiwe0/chat-with-geogebra"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <Github className="h-4 w-4" />
+                  GitHub 仓库（桌面端）
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+                <div className="text-xs text-muted-foreground pt-2">
+                  © 2025 Chat with GeoGebra. MIT License.
+                </div>
+                <div className="text-xs text-muted-foreground pt-2">
+                  MADE WITH ❤️ BY Ivory.
+                </div>
+              </div>
+
+              <div className="pt-4 border-t space-y-3">
+                <h4 className="font-medium text-sm mb-2">☕ 请开发者喝杯咖啡</h4>
+                <p className="text-xs text-muted-foreground">
+                  如果这个项目对你有帮助，可以请开发者喝杯咖啡 ❤️
+                </p>
+                <div className="space-y-2">
+                  <div className="text-xs">
+                    <span className="font-medium">支付宝：</span>
+                    <span className="text-muted-foreground ml-1">扫描二维码支持</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="font-medium">微信支付：</span>
+                    <span className="text-muted-foreground ml-1">扫描二维码支持</span>
+                  </div>
+                  <div className="text-xs">
+                    <span className="font-medium">GitHub Sponsors：</span>
+                    <a
+                      href="https://github.com/sponsors/tiwe0"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline ml-1"
+                    >
+                      成为赞助者
+                    </a>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground italic pt-2">
+                  💡 你的支持是项目持续更新的动力！
+                </p>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
 
-        {saveSuccess && <div className="p-2 bg-green-100 text-green-800 rounded-md text-center">设置已成功保存</div>}
+        {saveSuccess && (
+          <div className="p-2 bg-green-100 text-green-800 rounded-md text-center">
+            设置已成功保存
+          </div>
+        )}
         <DialogFooter>
           <Button type="submit" onClick={handleSave}>
             保存设置
@@ -249,6 +385,6 @@ export function ConfigDialog({ open, onOpenChange, onSave }: ConfigDialogProps) 
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
