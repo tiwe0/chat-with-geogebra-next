@@ -1,0 +1,48 @@
+{
+  "home": {
+    "title": "Chat with GeoGebra",
+    "hero": {
+      "title": "让数学变得",
+      "titleHighlight": "更简单",
+      "description": "通过AI助手与GeoGebra交互，轻松创建数学图形、解决问题，探索数学世界",
+      "startButton": "开始对话"
+    },
+    "header": {
+      "startButton": "开始使用"
+    },
+    "features": {
+      "smartChat": {
+        "title": "智能对话",
+        "description": "与AI助手自然对话，描述你想创建的数学图形或问题"
+      },
+      "geogebraIntegration": {
+        "title": "GeoGebra集成",
+        "description": "AI自动生成GeoGebra命令，实时在画布上展示数学图形"
+      },
+      "multiModel": {
+        "title": "多模型支持",
+        "description": "支持OpenAI、Claude、DeepSeek等多个AI模型，自由选择"
+      }
+    },
+    "cta": {
+      "title": "准备好开始了吗？",
+      "description": "立即体验AI辅助的数学学习和探索",
+      "button": "立即开始"
+    },
+    "footer": {
+      "copyright": "© 2025 Chat with GeoGebra. 让数学学习更有趣。"
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "Chat with GeoGebra - AI辅助数学学习平台",
+      "description": "通过AI助手与GeoGebra交互，轻松创建数学图形、解决问题。支持智能对话、实时图形生成，让数学学习更简单有趣。",
+      "keywords": "GeoGebra, AI数学助手, 数学图形, 在线数学工具, 数学学习, AI教育"
+    },
+    "chat": {
+      "title": "AI数学对话 - Chat with GeoGebra",
+      "description": "与AI助手对话，实时生成GeoGebra数学图形。支持多种AI模型，智能理解数学问题，自动生成可视化图形。",
+      "keywords": "AI对话, GeoGebra命令, 数学可视化, 智能数学助手"
+    }
+  }
+}

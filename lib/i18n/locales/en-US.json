@@ -1,0 +1,48 @@
+{
+  "home": {
+    "title": "Chat with GeoGebra",
+    "hero": {
+      "title": "Make Math",
+      "titleHighlight": "Easier",
+      "description": "Interact with GeoGebra through AI assistant, easily create mathematical graphics, solve problems, and explore the world of mathematics",
+      "startButton": "Start Chatting"
+    },
+    "header": {
+      "startButton": "Get Started"
+    },
+    "features": {
+      "smartChat": {
+        "title": "Smart Conversation",
+        "description": "Chat naturally with AI assistant, describe the mathematical graphics or problems you want to create"
+      },
+      "geogebraIntegration": {
+        "title": "GeoGebra Integration",
+        "description": "AI automatically generates GeoGebra commands, displaying mathematical graphics on canvas in real-time"
+      },
+      "multiModel": {
+        "title": "Multi-Model Support",
+        "description": "Support multiple AI models including OpenAI, Claude, DeepSeek and more"
+      }
+    },
+    "cta": {
+      "title": "Ready to Get Started?",
+      "description": "Experience AI-assisted math learning and exploration now",
+      "button": "Start Now"
+    },
+    "footer": {
+      "copyright": "© 2025 Chat with GeoGebra. Making math learning more fun."
+    }
+  },
+  "seo": {
+    "home": {
+      "title": "Chat with GeoGebra - AI-Assisted Math Learning Platform",
+      "description": "Interact with GeoGebra through AI assistant to easily create mathematical graphics and solve problems. Smart conversation and real-time graph generation make math learning easier and more fun.",
+      "keywords": "GeoGebra, AI Math Assistant, Mathematical Graphics, Online Math Tools, Math Learning, AI Education"
+    },
+    "chat": {
+      "title": "AI Math Chat - Chat with GeoGebra",
+      "description": "Chat with AI assistant to generate GeoGebra mathematical graphics in real-time. Support multiple AI models, intelligently understand math problems, and automatically generate visual graphics.",
+      "keywords": "AI Chat, GeoGebra Commands, Math Visualization, Smart Math Assistant"
+    }
+  }
+}
