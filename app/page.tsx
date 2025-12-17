@@ -2,17 +2,27 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { MessageSquare, Calculator, Sparkles, Globe } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { MessageSquare, Calculator, Sparkles, Globe, Image, User } from "lucide-react"
 import { useTranslation, type Locale } from "@/lib/i18n"
 
 export default function HomePage() {
   const router = useRouter()
   const [isNavigating, setIsNavigating] = useState(false)
   const [locale, setLocale] = useState<Locale>('zh-CN')
+  const [user, setUser] = useState<any>(null)
   const { t } = useTranslation(locale)
+
+  useEffect(() => {
+    // Check if user is logged in
+    const storedUser = localStorage.getItem("user")
+    if (storedUser) {
+      setUser(JSON.parse(storedUser))
+    }
+  }, [])
 
   const handleNavigate = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault()
@@ -27,7 +37,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-b from-background to-muted transition-opacity duration-300 ${isNavigating ? "opacity-0" : "opacity-100"}`}>
+    <div className={`min-h-screen bg-linear-to-b from-background to-muted transition-opacity duration-300 ${isNavigating ? "opacity-0" : "opacity-100"}`}>
       {/* Header */}
       <header className="border-b animate-in fade-in slide-in-from-top duration-500">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -45,6 +55,25 @@ export default function HomePage() {
             >
               <Globe className="h-5 w-5" />
             </Button>
+            {user ? (
+              <Link href="/profile">
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className="text-xs">
+                      {user.username?.charAt(0).toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:inline">{user.username}</span>
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  <User className="mr-2 h-4 w-4" />
+                  {locale === 'zh-CN' ? '登录' : 'Login'}
+                </Button>
+              </Link>
+            )}
             <Link href="/chat" onClick={handleNavigate}>
               <Button className="transition-all hover:scale-105">{t('home.header.startButton')}</Button>
             </Link>
@@ -67,6 +96,12 @@ export default function HomePage() {
               <Button size="lg" className="gap-2 transition-all hover:scale-105 hover:shadow-lg">
                 <MessageSquare className="h-5 w-5" />
                 {t('home.hero.startButton')}
+              </Button>
+            </Link>
+            <Link href="/gallery">
+              <Button size="lg" variant="outline" className="gap-2 transition-all hover:scale-105 hover:shadow-lg">
+                <Image className="h-5 w-5" />
+                {t('gallery.title')}
               </Button>
             </Link>
           </div>

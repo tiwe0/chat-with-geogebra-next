@@ -33,6 +33,159 @@
       "copyright": "© 2025 Chat with GeoGebra. 让数学学习更有趣。"
     }
   },
+  "gallery": {
+    "title": "作品展示",
+    "description": "浏览和分享由用户创建的GeoGebra数学图形",
+    "uploadButton": "上传作品",
+    "searchPlaceholder": "搜索作品...",
+    "sidebar": {
+      "education": "教育阶段",
+      "topic": "主题分类"
+    },
+    "education": {
+      "all": "全部阶段",
+      "primary": "小学",
+      "middle": "初中",
+      "high": "高中",
+      "university": "大学"
+    },
+    "topics": {
+      "all": "全部主题",
+      "function": "函数",
+      "analyticGeometry": "解析几何",
+      "planeGeometry": "平面几何",
+      "solidGeometry": "立体几何",
+      "algebra": "代数",
+      "calculus": "微积分",
+      "statistics": "统计与概率",
+      "trigonometry": "三角函数",
+      "sequence": "数列"
+    },
+    "filters": {
+      "all": "全部",
+      "geometry": "几何",
+      "algebra": "代数",
+      "calculus": "微积分",
+      "statistics": "统计",
+      "3d": "3D图形"
+    },
+    "card": {
+      "views": "查看",
+      "likes": "点赞",
+      "author": "作者",
+      "uploadedAt": "上传于",
+      "viewButton": "查看详情",
+      "downloadButton": "下载",
+      "likeButton": "点赞"
+    },
+    "upload": {
+      "title": "上传GeoGebra作品",
+      "fileLabel": "选择GGB文件",
+      "titleLabel": "作品标题",
+      "descriptionLabel": "作品描述",
+      "categoryLabel": "分类",
+      "tagsLabel": "标签（用逗号分隔）",
+      "submitButton": "上传",
+      "cancelButton": "取消",
+      "success": "上传成功！",
+      "error": "上传失败，请重试"
+    },
+    "empty": {
+      "title": "暂无作品",
+      "description": "成为第一个分享作品的人！"
+    },
+    "detail": {
+      "backToGallery": "返回作品展示",
+      "overview": "作品概览",
+      "author": "作者",
+      "uploadedAt": "上传时间",
+      "education": "教育阶段",
+      "topic": "主题分类",
+      "tags": "标签",
+      "statistics": "统计信息",
+      "views": "查看次数",
+      "likes": "点赞数",
+      "description": "作品描述",
+      "preview": "预览",
+      "noPreview": "暂无预览",
+      "downloadFile": "下载文件",
+      "likeWork": "点赞作品",
+      "shareWork": "分享作品",
+      "reportWork": "举报作品",
+      "relatedWorks": "相关作品",
+      "comments": "评论",
+      "addComment": "添加评论",
+      "noComments": "暂无评论",
+      "notFound": "作品未找到",
+      "notFoundDescription": "该作品可能已被删除或不存在"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "登录",
+      "subtitle": "欢迎回来！请登录您的账户",
+      "email": "邮箱",
+      "emailPlaceholder": "请输入邮箱",
+      "password": "密码",
+      "passwordPlaceholder": "请输入密码",
+      "rememberMe": "记住我",
+      "forgotPassword": "忘记密码？",
+      "loginButton": "登录",
+      "noAccount": "还没有账户？",
+      "signUp": "注册",
+      "orContinueWith": "或继续使用",
+      "github": "GitHub",
+      "google": "Google",
+      "success": "登录成功！",
+      "error": "登录失败，请检查邮箱和密码"
+    },
+    "signup": {
+      "title": "注册",
+      "subtitle": "创建新账户开始使用",
+      "username": "用户名",
+      "usernamePlaceholder": "请输入用户名",
+      "email": "邮箱",
+      "emailPlaceholder": "请输入邮箱",
+      "password": "密码",
+      "passwordPlaceholder": "请输入密码",
+      "confirmPassword": "确认密码",
+      "confirmPasswordPlaceholder": "请再次输入密码",
+      "signupButton": "注册",
+      "hasAccount": "已有账户？",
+      "login": "登录",
+      "success": "注册成功！",
+      "error": "注册失败，请重试"
+    },
+    "logout": "退出登录"
+  },
+  "profile": {
+    "title": "个人主页",
+    "myWorks": "我的作品",
+    "myLikes": "我的点赞",
+    "settings": "设置",
+    "editProfile": "编辑资料",
+    "statistics": "统计数据",
+    "totalWorks": "总作品数",
+    "totalViews": "总查看数",
+    "totalLikes": "总点赞数",
+    "followers": "粉丝",
+    "following": "关注",
+    "bio": "个人简介",
+    "bioPlaceholder": "介绍一下自己...",
+    "location": "地区",
+    "locationPlaceholder": "您的地区",
+    "website": "网站",
+    "websitePlaceholder": "您的网站",
+    "joinedDate": "加入日期",
+    "saveChanges": "保存修改",
+    "cancel": "取消",
+    "noWorks": "还没有作品",
+    "noWorksDescription": "开始创建您的第一个作品吧！",
+    "noLikes": "还没有点赞任何作品",
+    "noLikesDescription": "去作品展示看看吧！",
+    "updateSuccess": "资料更新成功！",
+    "updateError": "更新失败，请重试"
+  },
   "seo": {
     "home": {
       "title": "Chat with GeoGebra - AI辅助数学学习平台",
@@ -43,6 +196,11 @@
       "title": "AI数学对话 - Chat with GeoGebra",
       "description": "与AI助手对话，实时生成GeoGebra数学图形。支持多种AI模型，智能理解数学问题，自动生成可视化图形。",
       "keywords": "AI对话, GeoGebra命令, 数学可视化, 智能数学助手"
+    },
+    "gallery": {
+      "title": "作品展示 - Chat with GeoGebra",
+      "description": "浏览和下载用户分享的GeoGebra数学图形作品。探索各种几何、代数、微积分等数学可视化作品。",
+      "keywords": "GeoGebra作品, 数学图形分享, 数学可视化, GGB文件下载"
     }
   }
 }

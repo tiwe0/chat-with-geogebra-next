@@ -1,5 +1,7 @@
 # 🎨 Chat with GeoGebra (Next Part)
 
+> ⚠️ **安全提醒**: 在部署到生产环境前，请务必阅读 [安全检查清单](docs/SECURITY_CHECKLIST.md)
+
 ~~(⚠️本项目因作者找到了一周加班五天的工作而丧失了维护能力，虽然作者已经畅想出了详细的后续更新计划和宏伟的商业版图。如果您觉得您有能力让这个项目更好，请联系作者)~~
 
 目前比较闲，会日常更新一下
@@ -56,20 +58,50 @@
 
 ## 🚀 快速开始（本地部署）
 
-```bash
+### 前置要求
+- Node.js 18+ 
+- pnpm
+- Vercel 账户（用于数据库和文件存储，可选）
 
-# 克隆仓库
-git clone https://github.com/tiwe0/chat-with-geogebra-next.git
-cd chat-with-geogebra-next 
+### 🔐 环境配置（重要）
+
+1. **复制环境变量模板**：
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. **配置必需的环境变量**：
+   - `JWT_SECRET` - JWT 密钥（**生产环境必须设置**）
+   - `POSTGRES_URL` - 数据库连接（使用数据库功能时需要）
+   - `BLOB_READ_WRITE_TOKEN` - 文件存储令牌（使用文件上传时需要）
+
+   **生成 JWT Secret**：
+   ```bash
+   openssl rand -base64 32
+   ```
+
+   详细配置步骤见 [数据库设置指南](docs/DATABASE_SETUP.md)
+
+### 安装与运行
+
+```bash
 
 # 安装依赖
 pnpm install
+
+# （可选）如果使用数据库功能，初始化数据库
+pnpm tsx scripts/init-db.ts
 
 # 运行开发环境
 pnpm dev
 ```
 
- ⚡ 注意：需要自行准备 Claude、ChatGPT、DeepSeek 等服务的 API Key。
+访问 `http://localhost:3000` 开始使用。
+
+⚡ **注意**：
+- 基本聊天功能需要自行准备 Claude、ChatGPT、DeepSeek 等服务的 API Key
+- 画廊、用户认证功能需要配置数据库（见上方环境配置）
+- 更多 API 文档见 [API 文档](docs/API.md)
 
 ## 🧩 技术栈
 - Next.js

@@ -33,6 +33,159 @@
       "copyright": "© 2025 Chat with GeoGebra. Making math learning more fun."
     }
   },
+  "gallery": {
+    "title": "Gallery",
+    "description": "Browse and share GeoGebra mathematical graphics created by users",
+    "uploadButton": "Upload",
+    "searchPlaceholder": "Search works...",
+    "sidebar": {
+      "education": "Education Level",
+      "topic": "Topic Category"
+    },
+    "education": {
+      "all": "All Levels",
+      "primary": "Elementary",
+      "middle": "Middle School",
+      "high": "High School",
+      "university": "University"
+    },
+    "topics": {
+      "all": "All Topics",
+      "function": "Functions",
+      "analyticGeometry": "Analytic Geometry",
+      "planeGeometry": "Plane Geometry",
+      "solidGeometry": "Solid Geometry",
+      "algebra": "Algebra",
+      "calculus": "Calculus",
+      "statistics": "Statistics & Probability",
+      "trigonometry": "Trigonometry",
+      "sequence": "Sequences"
+    },
+    "filters": {
+      "all": "All",
+      "geometry": "Geometry",
+      "algebra": "Algebra",
+      "calculus": "Calculus",
+      "statistics": "Statistics",
+      "3d": "3D Graphics"
+    },
+    "card": {
+      "views": "Views",
+      "likes": "Likes",
+      "author": "Author",
+      "uploadedAt": "Uploaded",
+      "viewButton": "View Details",
+      "downloadButton": "Download",
+      "likeButton": "Like"
+    },
+    "upload": {
+      "title": "Upload GeoGebra Work",
+      "fileLabel": "Select GGB File",
+      "titleLabel": "Title",
+      "descriptionLabel": "Description",
+      "categoryLabel": "Category",
+      "tagsLabel": "Tags (comma separated)",
+      "submitButton": "Upload",
+      "cancelButton": "Cancel",
+      "success": "Upload successful!",
+      "error": "Upload failed, please try again"
+    },
+    "empty": {
+      "title": "No Works Yet",
+      "description": "Be the first to share your work!"
+    },
+    "detail": {
+      "backToGallery": "Back to Gallery",
+      "overview": "Overview",
+      "author": "Author",
+      "uploadedAt": "Uploaded",
+      "education": "Education Level",
+      "topic": "Topic",
+      "tags": "Tags",
+      "statistics": "Statistics",
+      "views": "Views",
+      "likes": "Likes",
+      "description": "Description",
+      "preview": "Preview",
+      "noPreview": "No Preview Available",
+      "downloadFile": "Download File",
+      "likeWork": "Like",
+      "shareWork": "Share",
+      "reportWork": "Report",
+      "relatedWorks": "Related Works",
+      "comments": "Comments",
+      "addComment": "Add Comment",
+      "noComments": "No comments yet",
+      "notFound": "Work Not Found",
+      "notFoundDescription": "This work may have been deleted or does not exist"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "subtitle": "Welcome back! Please login to your account",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "rememberMe": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "loginButton": "Login",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign up",
+      "orContinueWith": "Or continue with",
+      "github": "GitHub",
+      "google": "Google",
+      "success": "Login successful!",
+      "error": "Login failed, please check your email and password"
+    },
+    "signup": {
+      "title": "Sign Up",
+      "subtitle": "Create a new account to get started",
+      "username": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "signupButton": "Sign Up",
+      "hasAccount": "Already have an account?",
+      "login": "Login",
+      "success": "Sign up successful!",
+      "error": "Sign up failed, please try again"
+    },
+    "logout": "Logout"
+  },
+  "profile": {
+    "title": "Profile",
+    "myWorks": "My Works",
+    "myLikes": "My Likes",
+    "settings": "Settings",
+    "editProfile": "Edit Profile",
+    "statistics": "Statistics",
+    "totalWorks": "Total Works",
+    "totalViews": "Total Views",
+    "totalLikes": "Total Likes",
+    "followers": "Followers",
+    "following": "Following",
+    "bio": "Bio",
+    "bioPlaceholder": "Tell us about yourself...",
+    "location": "Location",
+    "locationPlaceholder": "Your location",
+    "website": "Website",
+    "websitePlaceholder": "Your website",
+    "joinedDate": "Joined",
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "noWorks": "No works yet",
+    "noWorksDescription": "Start creating your first work!",
+    "noLikes": "No likes yet",
+    "noLikesDescription": "Explore the gallery and like some works!",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Update failed, please try again"
+  },
   "seo": {
     "home": {
       "title": "Chat with GeoGebra - AI-Assisted Math Learning Platform",
@@ -43,6 +196,11 @@
       "title": "AI Math Chat - Chat with GeoGebra",
       "description": "Chat with AI assistant to generate GeoGebra mathematical graphics in real-time. Support multiple AI models, intelligently understand math problems, and automatically generate visual graphics.",
       "keywords": "AI Chat, GeoGebra Commands, Math Visualization, Smart Math Assistant"
+    },
+    "gallery": {
+      "title": "Gallery - Chat with GeoGebra",
+      "description": "Browse and download GeoGebra mathematical graphics shared by users. Explore various geometry, algebra, calculus and math visualization works.",
+      "keywords": "GeoGebra Works, Math Graphics Sharing, Math Visualization, GGB File Download"
     }
   }
 }
